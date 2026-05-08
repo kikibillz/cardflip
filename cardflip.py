@@ -1,31 +1,22 @@
+import os
+import random
+import sqlite3
 import tkinter as tk
 from tkinter import messagebox
-import random
-import mysql.connector
-from dotenv import load_dotenv
-import os
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ENV & DB
+# LOCAL DB
 # ─────────────────────────────────────────────────────────────────────────────
-load_dotenv()
-DB_HOST     = os.getenv("DB_HOST")
-DB_USER     = os.getenv("DB_USER")
-DB_NAME     = os.getenv("DB_NAME")
-
-conn = mysql.connector.connect(
-    host=DB_HOST, user=DB_USER, password=DB_PASSWORD, database=DB_NAME
-)
+DB_FILENAME = os.path.join(os.path.dirname(__file__), "cardflip.db")
+conn = sqlite3.connect(DB_FILENAME)
 cursor = conn.cursor()
-cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{DB_NAME}`")
-cursor.execute(f"USE `{DB_NAME}`")
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS scores (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    mode         VARCHAR(50),
-    player_score INT,
-    computer_score INT,
-    winner       VARCHAR(50)
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    mode TEXT,
+    player_score INTEGER,
+    computer_score INTEGER,
+    winner TEXT
 )
 """)
 conn.commit()
@@ -503,7 +494,7 @@ def end_game():
     messagebox.showinfo("Game Over", msg)
     cursor.execute(
         "INSERT INTO scores (mode, player_score, computer_score, winner) "
-        "VALUES (%s, %s, %s, %s)",
+        "VALUES (?, ?, ?, ?)",
         (mode, player_score, computer_score, winner)
     )
     conn.commit()
@@ -512,5 +503,6 @@ def end_game():
 # ─────────────────────────────────────────────────────────────────────────────
 # LAUNCH
 # ─────────────────────────────────────────────────────────────────────────────
-show_homepage()
-root.mainloop()
+if __name__ == "__main__":
+    show_homepage()
+    root.mainloop()
